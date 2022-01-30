@@ -9,6 +9,7 @@
     </div>
     <!-- Form -->
     <form
+      @submit.prevent="login"
       method="post"
       class="p-8 flex flex-col gap-8 border-2 border-slate-800 rounded-lg"
     >
@@ -71,17 +72,41 @@
 
 <script>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { MailIcon, KeyIcon } from "vue-tabler-icons";
+import { supabase } from "../supabase/config";
 
 export default {
   name: "Login",
   components: { MailIcon, KeyIcon },
   setup() {
+    const router = useRouter();
     const email = ref(null);
     const password = ref(null);
     const errorMessage = ref(null);
 
-    return { email, password, errorMessage };
+    const login = async () => {
+      try {
+        const { error } = await supabase.auth.signIn({
+          email: email.value,
+          password: password.value,
+        });
+
+        if (error) throw error;
+
+        router.replace({
+          name: "Home",
+        });
+      } catch (err) {
+        errorMessage.value = err.message;
+
+        setTimeout(() => {
+          errorMessage.value = null;
+        }, 5000);
+      }
+    };
+
+    return { email, password, errorMessage, login };
   },
 };
 </script>
