@@ -74,23 +74,27 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { MailIcon, KeyIcon } from "vue-tabler-icons";
-import { supabase } from "../supabase/config";
+import { useStore } from "../store/index";
 
 export default {
   name: "Login",
   components: { MailIcon, KeyIcon },
   setup() {
     const router = useRouter();
+    const store = useStore();
+
     const email = ref(null);
     const password = ref(null);
     const errorMessage = ref(null);
 
     const login = async () => {
       try {
-        const { error } = await supabase.auth.signIn({
-          email: email.value,
-          password: password.value,
-        });
+        // const { error } = await supabase.auth.signIn({
+        //   email: email.value,
+        //   password: password.value,
+        // });
+
+        const { error } = await store.login(email.value, password.value);
 
         if (error) throw error;
 

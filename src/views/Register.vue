@@ -90,13 +90,15 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { MailIcon, KeyIcon, LockIcon } from "vue-tabler-icons";
-import { supabase } from "../supabase/config";
+import { useStore } from "../store/index";
 
 export default {
   name: "Register",
   components: { MailIcon, KeyIcon, LockIcon },
   setup() {
     const router = useRouter();
+    const store = useStore();
+
     const email = ref(null);
     const password = ref(null);
     const confirmPassword = ref(null);
@@ -106,10 +108,12 @@ export default {
     const register = async () => {
       if (password.value === confirmPassword.value) {
         try {
-          const { error } = await supabase.auth.signUp({
-            email: email.value,
-            password: password.value,
-          });
+          // const { error } = await supabase.auth.signUp({
+          //   email: email.value,
+          //   password: password.value,
+          // });
+
+          const { error } = await store.register(email.value, password.value);
 
           if (error) throw error;
 
