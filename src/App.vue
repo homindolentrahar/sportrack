@@ -15,11 +15,11 @@ export default {
   components: { Navigation },
   setup() {
     const store = useStore();
-    const { appReady, authUser } = storeToRefs(store);
+    const { appReady, user } = storeToRefs(store);
 
     // const user = supabase.auth.user();
 
-    if (!authUser.value) {
+    if (!user.value) {
       // appReady.value = true;
       store.$patch((state) => {
         state.appReady = true;

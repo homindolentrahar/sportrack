@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^1.29.4",
+    "@tailwindcss/forms": "^0.4.0",
     "pinia": "^2.0.11",
     "uid": "^2.0.0",
     "vue": "^3.2.25",

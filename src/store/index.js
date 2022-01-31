@@ -33,8 +33,22 @@ export const useStore = defineStore("main", {
     async logout() {
       await supabase.auth.signOut();
     },
-  },
-  getters: {
-    authUser: (_) => supabase.auth.user(),
+
+    // CRUD
+    async getAllWorkouts() {
+      return supabase.from("workouts").select("*");
+    },
+    async getSingleWorkout(id) {
+      return supabase.from("workouts").select("*").eq("id", id);
+    },
+    async createWorkout(data) {
+      return supabase.from("workouts").insert([data]);
+    },
+    async updateWorkout(data, id) {
+      return supabase.from("workouts").update(data).eq("id", id);
+    },
+    async deleteWorkout(id) {
+      return supabase.from("workouts").delete().eq("id", id);
+    },
   },
 });
