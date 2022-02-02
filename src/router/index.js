@@ -67,17 +67,24 @@ router.beforeEach((to, from, next) => {
 router.beforeEach((to, from, next) => {
   const user = supabase.auth.user();
 
-  if (to.matched.some((res) => res.meta.auth)) {
+  // if (to.matched.some((res) => res.meta.auth)) {
+  if (to.meta.auth) {
     if (user) {
       next();
       return;
     }
 
     next({ name: "Login" });
-    return;
-  }
+  } else if (to.name === "Login" || to.name === "Register") {
+    if (user) {
+      next({ name: "Home" });
+      return;
+    }
 
-  next();
+    next();
+  } else {
+    next();
+  }
 });
 
 export default router;

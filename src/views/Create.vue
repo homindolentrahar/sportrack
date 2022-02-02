@@ -1,3 +1,86 @@
+<script setup>
+import { ref } from "vue";
+import { RunIcon, ChevronDownIcon, TrashIcon } from "vue-tabler-icons";
+import { uid } from "uid";
+import { useStore } from "../store/index";
+
+const store = useStore();
+
+const name = ref("");
+const type = ref("");
+const exercises = ref([]);
+
+const statusMessage = ref(null);
+const errorMessage = ref(null);
+
+const addExercise = () => {
+  if (type.value === "strength") {
+    exercises.value.push({
+      id: uid(),
+      exercise: "",
+      sets: "",
+      reps: "",
+      weight: "",
+    });
+
+    return;
+  }
+  exercises.value.push({
+    id: uid(),
+    cardioType: "",
+    distance: "",
+    duration: "",
+    pace: "",
+  });
+};
+
+const deleteExercise = (id) => {
+  if (exercises.value.length > 1) {
+    exercises.value = exercises.value.filter((ex) => ex.id !== id);
+
+    return;
+  }
+
+  errorMessage.value = "You must have at least one exercise";
+  setTimeout(() => {
+    errorMessage.value = false;
+  }, 5000);
+};
+
+const workoutChange = () => {
+  exercises.value = [];
+
+  addExercise();
+};
+
+const createWorkout = async () => {
+  try {
+    const { error } = await store.createWorkout({
+      name: name.value,
+      type: type.value,
+      exercises: exercises.value,
+    });
+
+    if (error) throw error;
+
+    statusMessage.value = "Success recording workout";
+
+    name.value = "";
+    type.value = "";
+    exercises.value = [];
+
+    setTimeout(() => {
+      statusMessage.value = null;
+    }, 5000);
+  } catch (err) {
+    errorMessage.value = err.message;
+    setTimeout(() => {
+      errorMessage.value = false;
+    }, 5000);
+  }
+};
+</script>
+
 <template>
   <div class="max-w-screen-md mx-auto px-5 py-10">
     <!-- Messages -->
@@ -193,106 +276,5 @@
     </form>
   </div>
 </template>
-
-<script>
-import { ref } from "vue";
-import { RunIcon, ChevronDownIcon, TrashIcon } from "vue-tabler-icons";
-import { uid } from "uid";
-import { useStore } from "../store/index";
-
-export default {
-  name: "Create",
-  components: { RunIcon, ChevronDownIcon, TrashIcon },
-  setup() {
-    const store = useStore();
-
-    const name = ref("");
-    const type = ref("");
-    const exercises = ref([]);
-
-    const statusMessage = ref(null);
-    const errorMessage = ref(null);
-
-    const addExercise = () => {
-      if (type.value === "strength") {
-        exercises.value.push({
-          id: uid(),
-          exercise: "",
-          sets: "",
-          reps: "",
-          weight: "",
-        });
-
-        return;
-      }
-      exercises.value.push({
-        id: uid(),
-        cardioType: "",
-        distance: "",
-        duration: "",
-        pace: "",
-      });
-    };
-
-    const deleteExercise = (id) => {
-      if (exercises.value.length > 1) {
-        exercises.value = exercises.value.filter((ex) => ex.id !== id);
-
-        return;
-      }
-
-      errorMessage.value = "You must have at least one exercise";
-      setTimeout(() => {
-        errorMessage.value = false;
-      }, 5000);
-    };
-
-    const workoutChange = () => {
-      exercises.value = [];
-
-      addExercise();
-    };
-
-    const createWorkout = async () => {
-      try {
-        const { error } = await store.createWorkout({
-          name: name.value,
-          type: type.value,
-          exercises: exercises.value,
-        });
-
-        if (error) throw error;
-
-        statusMessage.value = "Success recording workout";
-
-        name.value = "";
-        type.value = "";
-        exercises.value = [];
-
-        setTimeout(() => {
-          statusMessage.value = null;
-        }, 5000);
-      } catch (err) {
-        errorMessage.value = err.message;
-        setTimeout(() => {
-          errorMessage.value = false;
-        }, 5000);
-      }
-    };
-
-    return {
-      name,
-      type,
-      exercises,
-      statusMessage,
-      errorMessage,
-      addExercise,
-      deleteExercise,
-      workoutChange,
-      createWorkout,
-    };
-  },
-};
-</script>
 
 <style></style>

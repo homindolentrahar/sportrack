@@ -1,3 +1,45 @@
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { MailIcon, KeyIcon, LockIcon } from "vue-tabler-icons";
+import { useStore } from "../store/index";
+
+const router = useRouter();
+const store = useStore();
+
+const email = ref(null);
+const password = ref(null);
+const confirmPassword = ref(null);
+const errorMessage = ref(null);
+
+const register = async () => {
+  if (password.value === confirmPassword.value) {
+    try {
+      const { error } = await store.register(email.value, password.value);
+
+      if (error) throw error;
+
+      router.replace({
+        name: "Login",
+      });
+    } catch (err) {
+      errorMessage.value = err.message;
+
+      setTimeout(() => {
+        errorMessage.value = null;
+      }, 5000);
+    }
+
+    return;
+  }
+
+  errorMessage.value = "Password does not match";
+  setTimeout(() => {
+    errorMessage.value = null;
+  }, 5000);
+};
+</script>
+
 <template>
   <div class="max-w-screen-sm mx-auto px-5 py-10">
     <!-- Error message -->
@@ -85,61 +127,5 @@
     </form>
   </div>
 </template>
-
-<script>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { MailIcon, KeyIcon, LockIcon } from "vue-tabler-icons";
-import { useStore } from "../store/index";
-
-export default {
-  name: "Register",
-  components: { MailIcon, KeyIcon, LockIcon },
-  setup() {
-    const router = useRouter();
-    const store = useStore();
-
-    const email = ref(null);
-    const password = ref(null);
-    const confirmPassword = ref(null);
-    const errorMessage = ref(null);
-
-    // Register
-    const register = async () => {
-      if (password.value === confirmPassword.value) {
-        try {
-          // const { error } = await supabase.auth.signUp({
-          //   email: email.value,
-          //   password: password.value,
-          // });
-
-          const { error } = await store.register(email.value, password.value);
-
-          if (error) throw error;
-
-          router.replace({
-            name: "Login",
-          });
-        } catch (err) {
-          errorMessage.value = err.message;
-
-          setTimeout(() => {
-            errorMessage.value = null;
-          }, 5000);
-        }
-
-        return;
-      }
-
-      errorMessage.value = "Password does not match";
-      setTimeout(() => {
-        errorMessage.value = null;
-      }, 5000);
-    };
-
-    return { email, password, confirmPassword, errorMessage, register };
-  },
-};
-</script>
 
 <style></style>

@@ -1,3 +1,131 @@
+<script setup>
+import { uid } from "uid";
+import { ref, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useStore } from "../store/index";
+import {
+  Home2Icon,
+  ChevronRightIcon,
+  EditIcon,
+  TrashIcon,
+  RunIcon,
+  ChevronDownIcon,
+} from "vue-tabler-icons";
+
+const route = useRoute();
+const router = useRouter();
+const store = useStore();
+
+const data = ref(null);
+const loaded = ref(null);
+const errorMessage = ref(null);
+const statusMessage = ref(null);
+
+const currentId = route.params.id;
+
+const edit = ref(null);
+
+const getData = async () => {
+  try {
+    const { data: workouts, error } = await store.getSingleWorkout(currentId);
+
+    if (error) throw error;
+
+    data.value = workouts[0];
+    loaded.value = true;
+  } catch (err) {
+    errorMessage.value = err.message;
+    setTimeout(() => {
+      errorMessage.value = false;
+    }, 5000);
+  }
+};
+
+const update = async () => {
+  try {
+    const { error } = await store.updateWorkout(
+      {
+        name: data.value.name,
+        exercises: data.value.exercises,
+      },
+      currentId
+    );
+
+    if (error) throw error;
+
+    edit.value = false;
+    statusMessage.value = "Record updated";
+    setTimeout(() => {
+      statusMessage.value = false;
+    }, 5000);
+  } catch (err) {
+    errorMessage.value = err.message;
+    setTimeout(() => {
+      errorMessage.value = false;
+    }, 5000);
+  }
+};
+
+const editMode = () => {
+  edit.value = !edit.value;
+};
+
+const deleteWorkout = async () => {
+  try {
+    const { error } = await store.deleteWorkout(currentId);
+
+    if (error) throw error;
+
+    router.replace({
+      name: "Home",
+    });
+  } catch (err) {
+    errorMessage.value = err.message;
+    setTimeout(() => {
+      errorMessage.value = false;
+    }, 5000);
+  }
+};
+
+const addExercise = () => {
+  if (data.value.type === "strength") {
+    data.value.exercises.push({
+      id: uid(),
+      exercise: "",
+      sets: "",
+      reps: "",
+      weight: "",
+    });
+
+    return;
+  }
+  data.value.exercises.push({
+    id: uid(),
+    cardioType: "",
+    distance: "",
+    duration: "",
+    pace: "",
+  });
+};
+
+const deleteExercise = (id) => {
+  if (data.value.exercises.length > 1) {
+    data.value.exercises = data.value.exercises.filter((ex) => ex.id !== id);
+
+    return;
+  }
+
+  errorMessage.value = "You must have at least one exercise";
+  setTimeout(() => {
+    errorMessage.value = false;
+  }, 5000);
+};
+
+watchEffect(() => {
+  getData();
+});
+</script>
+
 <template>
   <div class="max-w-screen-sm mx-auto px-4 py-10">
     <!-- Messages -->
@@ -14,42 +142,43 @@
       {{ statusMessage }}
     </div>
 
-    <nav class="flex" aria-label="Breadcrumb">
-      <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-          <router-link
-            :to="{ name: 'Home' }"
-            class="inline-flex gap-2 items-center text-sm font-medium text-slate-400 hover:text-slate-50 transition-all duration-200"
-          >
-            <Home2Icon class="w-5 h-5" />
-            Home
-          </router-link>
-        </li>
-        <li>
-          <div class="flex items-center">
-            <ChevronRightIcon class="w-5 h-5 text-slate-400" />
-            <router-link
-              :to="{ name: 'Home' }"
-              class="ml-1 text-sm font-medium text-slate-400 hover:text-slate-50"
-              >Workouts</router-link
-            >
-          </div>
-        </li>
-        <li aria-current="page">
-          <div class="flex items-center">
-            <ChevronRightIcon class="w-5 h-5 text-slate-400" />
-
-            <span
-              class="ml-1 text-sm font-medium text-gray-400 md:ml-2 dark:text-gray-500"
-              >{{ data.name }}</span
-            >
-          </div>
-        </li>
-      </ol>
-    </nav>
-
     <!-- Data -->
     <div v-if="loaded" class="container p-10 flex flex-col gap-6">
+      <!-- Breadcrumbs -->
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <router-link
+              :to="{ name: 'Home' }"
+              class="inline-flex gap-2 items-center text-sm font-medium text-slate-400 hover:text-slate-50 transition-all duration-200"
+            >
+              <Home2Icon class="w-5 h-5" />
+              Home
+            </router-link>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <ChevronRightIcon class="w-5 h-5 text-slate-400" />
+              <router-link
+                :to="{ name: 'Home' }"
+                class="ml-1 text-sm font-medium text-slate-400 hover:text-slate-50"
+                >Workouts</router-link
+              >
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <ChevronRightIcon class="w-5 h-5 text-slate-400" />
+
+              <span
+                class="ml-1 text-sm font-medium text-gray-400 md:ml-2 dark:text-gray-500"
+              >
+                {{ data.name }}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
       <!-- Top -->
       <div
         class="flex justify-between gap-6 rounded-lg bg-slate-800 bg-opacity-25 p-6"
@@ -280,169 +409,5 @@
     </div>
   </div>
 </template>
-
-<script>
-import { uid } from "uid";
-import { ref, watchEffect } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useStore } from "../store/index";
-import {
-  Home2Icon,
-  ChevronRightIcon,
-  EditIcon,
-  TrashIcon,
-  RunIcon,
-  ChevronDownIcon,
-} from "vue-tabler-icons";
-
-export default {
-  name: "Workout",
-  components: {
-    Home2Icon,
-    ChevronRightIcon,
-    EditIcon,
-    TrashIcon,
-    RunIcon,
-    ChevronDownIcon,
-  },
-  setup() {
-    const route = useRoute();
-    const router = useRouter();
-    const store = useStore();
-    const user = ref(null);
-
-    const data = ref(null);
-    const loaded = ref(null);
-    const errorMessage = ref(null);
-    const statusMessage = ref(null);
-
-    const currentId = route.params.id;
-
-    const edit = ref(null);
-
-    const getData = async () => {
-      try {
-        const { data: workouts, error } = await store.getSingleWorkout(
-          currentId
-        );
-
-        if (error) throw error;
-
-        data.value = workouts[0];
-        loaded.value = true;
-
-        console.log(data.value);
-      } catch (err) {
-        errorMessage.value = err.message;
-        setTimeout(() => {
-          errorMessage.value = false;
-        }, 5000);
-      }
-    };
-
-    const update = async () => {
-      try {
-        const { error } = await store.updateWorkout(
-          {
-            name: data.value.name,
-            exercises: data.value.exercises,
-          },
-          currentId
-        );
-
-        if (error) throw error;
-
-        edit.value = false;
-        statusMessage.value = "Record updated";
-        setTimeout(() => {
-          statusMessage.value = false;
-        }, 5000);
-      } catch (err) {
-        errorMessage.value = err.message;
-        setTimeout(() => {
-          errorMessage.value = false;
-        }, 5000);
-      }
-    };
-
-    const editMode = () => {
-      edit.value = !edit.value;
-    };
-
-    const deleteWorkout = async () => {
-      try {
-        const { error } = await store.deleteWorkout(currentId);
-
-        if (error) throw error;
-
-        router.replace({
-          name: "Home",
-        });
-      } catch (err) {
-        errorMessage.value = err.message;
-        setTimeout(() => {
-          errorMessage.value = false;
-        }, 5000);
-      }
-    };
-
-    const addExercise = () => {
-      if (data.value.type === "strength") {
-        data.value.exercises.push({
-          id: uid(),
-          exercise: "",
-          sets: "",
-          reps: "",
-          weight: "",
-        });
-
-        return;
-      }
-      data.value.exercises.push({
-        id: uid(),
-        cardioType: "",
-        distance: "",
-        duration: "",
-        pace: "",
-      });
-    };
-
-    const deleteExercise = (id) => {
-      if (data.value.exercises.length > 1) {
-        data.value.exercises = data.value.exercises.filter(
-          (ex) => ex.id !== id
-        );
-
-        return;
-      }
-
-      errorMessage.value = "You must have at least one exercise";
-      setTimeout(() => {
-        errorMessage.value = false;
-      }, 5000);
-    };
-
-    getData();
-
-    watchEffect(() => {
-      user.value = store.user;
-    });
-
-    return {
-      data,
-      loaded,
-      errorMessage,
-      statusMessage,
-      user,
-      edit,
-      editMode,
-      deleteWorkout,
-      addExercise,
-      deleteExercise,
-      update,
-    };
-  },
-};
-</script>
 
 <style></style>

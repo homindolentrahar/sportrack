@@ -1,3 +1,11 @@
+<script setup>
+import { RunIcon } from "vue-tabler-icons";
+
+const props = defineProps({
+  item: Object,
+});
+</script>
+
 <template>
   <router-link
     :to="{ name: 'Workout', params: { id: item.id } }"
@@ -42,16 +50,5 @@
     </p>
   </router-link>
 </template>
-
-<script>
-import { RunIcon } from "vue-tabler-icons";
-
-export default {
-  name: "WorkoutItem",
-  props: ["item"],
-  components: { RunIcon },
-  setup() {},
-};
-</script>
 
 <style></style>

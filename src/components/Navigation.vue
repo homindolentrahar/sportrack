@@ -1,3 +1,25 @@
+<script setup>
+import { ref, watchEffect } from "vue";
+import { useRouter } from "vue-router";
+import { PlusIcon, RunIcon } from "vue-tabler-icons";
+import { useStore } from "../store/index";
+
+const store = useStore();
+const user = ref(null);
+
+watchEffect(() => {
+  user.value = store.user;
+});
+
+const logout = () => {
+  store.logout();
+
+  router.replace({
+    name: "Home",
+  });
+};
+</script>
+
 <template>
   <header class="bg-transparent text-slate-50 border-b border-slate-800">
     <nav
@@ -35,37 +57,5 @@
     </nav>
   </header>
 </template>
-
-<script>
-import { ref, watchEffect } from "vue";
-import { useRouter } from "vue-router";
-import { PlusIcon, RunIcon } from "vue-tabler-icons";
-import { useStore } from "../store/index";
-
-export default {
-  name: "Navigation",
-  components: { PlusIcon, RunIcon },
-  setup() {
-    const router = useRouter();
-    const store = useStore();
-    // const user = computed(() => store.user);
-    const user = ref(null);
-
-    watchEffect(() => {
-      user.value = store.user;
-    });
-
-    const logout = () => {
-      store.logout();
-
-      router.replace({
-        name: "Home",
-      });
-    };
-
-    return { logout, user };
-  },
-};
-</script>
 
 <style></style>

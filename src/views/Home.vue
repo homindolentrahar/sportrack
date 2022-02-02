@@ -1,3 +1,33 @@
+<script setup>
+import { ref, watchEffect } from "vue";
+import { useStore } from "../store/index";
+import { MoodEmptyIcon } from "vue-tabler-icons";
+import WorkoutItem from "../components/WorkoutItem.vue";
+
+const store = useStore();
+const user = ref(null);
+const data = ref([]);
+const loaded = ref(null);
+
+const getAllWorkouts = async () => {
+  try {
+    const { data: workouts, error } = await store.getAllWorkouts();
+
+    if (error) throw error;
+
+    data.value = workouts;
+    loaded.value = true;
+  } catch (err) {
+    console.log(error.message);
+  }
+};
+
+watchEffect(() => {
+  user.value = store.user ? store.user.email : "Guest";
+  getAllWorkouts();
+});
+</script>
+
 <template>
   <div v-if="loaded" class="container p-10">
     <!-- Empty -->
@@ -24,43 +54,5 @@
     <p class="text-center text-slate-200">Fetching data...</p>
   </div>
 </template>
-
-<script>
-import { ref, watchEffect } from "vue";
-import { useStore } from "../store/index";
-import { MoodEmptyIcon } from "vue-tabler-icons";
-import WorkoutItem from "../components/WorkoutItem.vue";
-
-export default {
-  name: "Home",
-  components: { MoodEmptyIcon, WorkoutItem },
-  setup() {
-    const store = useStore();
-    const user = ref(null);
-    const data = ref([]);
-    const loaded = ref(null);
-
-    const getAllWorkouts = async () => {
-      try {
-        const { data: workouts, error } = await store.getAllWorkouts();
-
-        if (error) throw error;
-
-        data.value = workouts;
-        loaded.value = true;
-      } catch (err) {
-        console.log(error.message);
-      }
-    };
-
-    watchEffect(() => {
-      user.value = store.user ? store.user.email : "Guest";
-      getAllWorkouts();
-    });
-
-    return { user, data, loaded };
-  },
-};
-</script>
 
 <style></style>
